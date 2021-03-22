@@ -164,6 +164,6 @@ export
 	LinearMEBDF2,
 
 	#linearResponse.jl
-	linear_response_tensor_autodiff,
-	linearized_transfer_function_autodiff,
+	linear_response_tensor,
+	linearized_flow_autodiff,
 	adaptiveTOCollocationLinearResponseMatrix

@@ -1,21 +1,21 @@
 # functions to be used in the context of the methods described in https://arxiv.org/abs/1907.10852
 # still very much under development and undocumented
 
-function linear_response_tensor_autodiff(flowmap, u, p)
-	DT = linearized_transfer_function_autodiff(x -> flowmap(x,p), u)
-	Tdot = u -> parameter_autodiff(flowmap, u, p)
+function linear_response_tensor(flowmap, u, p)
+	DT = linearized_flow_autodiff(x -> flowmap(x,p), u)
+	Tdot = u -> flowmap_parameter_derivative(flowmap, u, p)
 	DTdot = linearized_transfer_function_autodiff(Tdot, u)
 	DTinv = inv(DT)
 	return -Tensors.symmetric(DTinv ⋅ DTdot ⋅ Tensors.dott(DTinv))
 end
 
-linearized_transfer_function_autodiff(flowmap, x) = Tensor{2,2}(ForwardDiff.jacobian(flowmap, x))
+linearized_flow_autodiff(flowmap, x) = Tensor{2,2}(ForwardDiff.jacobian(flowmap, x))
 
-parameter_autodiff(flowmap, u, p) = ForwardDiff.jacobian(x -> flowmap(x[1:end - 1], x[end]), vcat(u, p))[:,end]
+flowmap_parameter_derivative(flowmap, u, p) = ForwardDiff.jacobian(x -> flowmap(x[1:end - 1], x[end]), vcat(u, p))[:,end]
 
 # adapted from adaptiveTOCollocationStiffnessMatrix
 function adaptiveTOCollocationLinearResponseMatrix(ctx, flowmap, p; bdata::BoundaryData=BoundaryData())
-	Tdot(u) = parameter_autodiff(transferfun, u, p)
+	Tdot(u) = flowmap_parameter_derivative(transferfun, u, p)
 	num_real_points = ctx.n
 	flow_map_images = zeros(Vec{2}, num_real_points)
 	for i in 1:num_real_points
