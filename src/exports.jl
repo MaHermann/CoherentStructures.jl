@@ -161,4 +161,9 @@ export
 
 	#odesolvers.jl
 	LinearImplicitEuler,
-	LinearMEBDF2
+	LinearMEBDF2,
+
+	#linearResponse.jl
+	linear_response_tensor_autodiff,
+	linearized_transfer_function_autodiff,
+	adaptiveTOCollocationLinearResponseMatrix

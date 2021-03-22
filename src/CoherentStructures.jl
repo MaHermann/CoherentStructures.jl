@@ -46,6 +46,7 @@ const JFM = JuAFEM
 #Other miscallaneous packages
 using RecipesBase
 import ColorTypes
+using ForwardDiff
 
 # contains a list of exported functions
 include("exports.jl")
@@ -112,5 +113,8 @@ include("ulam.jl")
 
 # plotting functionality
 include("plotting.jl")
+
+# linear response related methods
+include("linearResponse.jl")
 
 end
