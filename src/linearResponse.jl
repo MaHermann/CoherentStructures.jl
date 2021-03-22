@@ -4,7 +4,7 @@
 function linear_response_tensor(flowmap, u, p)
 	DT = linearized_flow_autodiff(x -> flowmap(x,p), u)
 	Tdot = u -> flowmap_parameter_derivative(flowmap, u, p)
-	DTdot = linearized_transfer_function_autodiff(Tdot, u)
+	DTdot = linearized_flow_autodiff(Tdot, u)
 	DTinv = inv(DT)
 	return -Tensors.symmetric(DTinv ⋅ DTdot ⋅ Tensors.dott(DTinv))
 end
