@@ -2,3 +2,5 @@
 *.swp
 docs/build/
 docs/site/
+.idea/
+notebooks/*/.ipynb_checkpoints/
