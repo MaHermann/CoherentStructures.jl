@@ -3,4 +3,7 @@
 docs/build/
 docs/site/
 .idea/
-notebooks/*/.ipynb_checkpoints/
+notebooks/Ocean\ Stoptime/.ipynb_checkpoints/
+notebooks/Ocean\ Wind/.ipynb_checkpoints/
+notebooks/Rotating\ Double\ Gyre/.ipynb_checkpoints/
+notebooks/Standard/.ipynb_checkpoints/
