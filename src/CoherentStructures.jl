@@ -47,6 +47,7 @@ const JFM = JuAFEM
 using RecipesBase
 import ColorTypes
 using ForwardDiff
+using Contour
 
 # contains a list of exported functions
 include("exports.jl")
