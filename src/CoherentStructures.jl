@@ -10,7 +10,7 @@ using Statistics: mean
 
 # import data type packages
 import StaticArrays
-using StaticArrays: SVector, @SVector, SArray, SMatrix, @SMatrix
+using StaticArrays: SVector, @SVector, SArray, SA, SMatrix, @SMatrix
 import Tensors
 using Tensors: Vec, Tensor, SymmetricTensor
 import AxisArrays
@@ -116,5 +116,8 @@ include("plotting.jl")
 
 # linear response related methods
 include("linearResponse.jl")
+
+# functions for dynamic isoperimetry
+include("dynamicIsoperimetry.jl")
 
 end

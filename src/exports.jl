@@ -166,4 +166,10 @@ export
 	#linearResponse.jl
 	linear_response_tensor,
 	linearized_flow_autodiff,
-	adaptiveTOCollocationLinearResponseMatrix
+	adaptiveTOCollocationLinearResponseMatrix,
+    
+    #dynamicIsoperimetry.jl
+	dynamic_cheeger_value,
+    get_minimal_levelset,
+	get_levelset_evolution,
+	get_levelset
