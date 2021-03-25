@@ -13,34 +13,43 @@ linearized_flow_autodiff(flowmap, x) = Tensor{2,2}(ForwardDiff.jacobian(flowmap,
 
 flowmap_parameter_derivative(flowmap, u, p) = ForwardDiff.jacobian(x -> flowmap(x[1:end - 1], x[end]), vcat(u, p))[:,end]
 
+
 # adapted from adaptiveTOCollocationStiffnessMatrix
 function adaptiveTOCollocationLinearResponseMatrix(ctx, flowmap, p; bdata::BoundaryData=BoundaryData())
-	Tdot(u) = flowmap_parameter_derivative(transferfun, u, p)
-	num_real_points = ctx.n
-	flow_map_images = zeros(Vec{2}, num_real_points)
-	for i in 1:num_real_points
-		flow_map_images[i] = Vec{2}(flowmap(ctx.grid.nodes[i].x, p))
-	end
-	Tdots_at_dofs = [Vec{2}(Tdot(ctx.grid.nodes[j].x)) for j in bcdof_to_node(ctx, bdata)]
-	flow_map_t(j) = flow_map_images[j]
+    Tdot(u) = flowmap_parameter_derivative(flowmap, u, p)
+
+    flow_map_images = [Vec{2}(flowmap(ctx.grid.nodes[i].x, p)) for i in 1:ctx.n]
+    flow_map_t(j) = flow_map_images[j]
+
     new_ctx,new_bdata,_ = adaptiveTOFutureGrid(ctx,flow_map_t,bdata=bdata, flow_map_mode=1)
-	# for now we assume volume preserving
-	return assembleLinearResponseMatrix(new_ctx, Tdots_at_dofs, bdata=new_bdata)
+
+    # for now we assume volume preserving
+    Tdots_at_dofs = [Vec{2}(Tdot(ctx.grid.nodes[i].x)) for i in bcdof_to_node(new_ctx,new_bdata)]
+
+    L = assembleLinearResponseMatrix(new_ctx, Tdots_at_dofs, bdata=new_bdata)
+
+    translation_table_new = bcdof_to_node(new_ctx,new_bdata)
+    I, J, V = Main.CoherentStructures.findnz(L)
+    I .= translation_table_new[I]
+    J .= translation_table_new[J]
+    L = Main.CoherentStructures.sparse(I,J,V,size(L,1),size(L,2))
+
+    return 0.5*(L+L')
 end
 
 # adapted from _assembleStiffnesMatrix
 function assembleLinearResponseMatrix(ctx, Tdots_at_dofs; bdata::BoundaryData=BoundaryData())
-	cv = JFM.CellScalarValues(ctx.qr, ctx.ip, ctx.ip_geom)
-	dh = ctx.dh
-	K = JFM.create_sparsity_pattern(dh)
-	a_K = JFM.start_assemble(K)
+    cv = JFM.CellScalarValues(ctx.qr, ctx.ip, ctx.ip_geom)
+    dh = ctx.dh
+    K = JFM.create_sparsity_pattern(dh)
+    a_K = JFM.start_assemble(K)
     dofs = zeros(Int, JFM.ndofs_per_cell(dh))
     n = JFM.getnbasefunctions(cv)
     Ke = zeros(n, n)
 
-	index = 1
+    index = 1 # quadrature point counter
 
-	@inbounds for cell in JFM.CellIterator(dh)
+    @inbounds for cell in JFM.CellIterator(dh)
         fill!(Ke, 0)
         JFM.reinit!(cv, cell)
         for q in 1:JFM.getnquadpoints(cv)
@@ -49,14 +58,11 @@ function assembleLinearResponseMatrix(ctx, Tdots_at_dofs; bdata::BoundaryData=Bo
                 ∇φₖ = JFM.shape_gradient(cv, q, k)
                 for l in 1:n
                     ∇φₗ = JFM.shape_gradient(cv, q, l)
-					for s in 1:n
-					    # the node in dof order that corresponds to the s-th shape funciton of the cell
-						dof_s = JFM.celldofs(cell)[s]
-						∇φₛ = JFM.shape_gradient(cv, q, s)
-						# this makes some very implicit assumptions about the order of celldofs that I really do not like
-                   		Ke[k,l] += 0.5*(Tdots_at_dofs[dof_s] ⋅ ∇φₗ)  * (∇φₛ ⋅ ∇φₖ) * dΩ
-						Ke[k,l] += 0.5*(Tdots_at_dofs[dof_s] ⋅ ∇φₖ)  * (∇φₛ ⋅ ∇φₗ) * dΩ
-					end
+                    for s in 1:n
+                        dof_s = JFM.celldofs(cell)[s]
+                        ∇φₛ = JFM.shape_gradient(cv, q, s)
+                        Ke[k,l] += (∇φₖ ⋅ Tdots_at_dofs[dof_s])  * (∇φₛ ⋅ ∇φₗ) * dΩ
+                    end
                 end
             end
             index += 1
@@ -64,5 +70,5 @@ function assembleLinearResponseMatrix(ctx, Tdots_at_dofs; bdata::BoundaryData=Bo
         JFM.celldofs!(dofs, cell)
         JFM.assemble!(a_K, dofs, Ke)
     end
-	return applyBCS(ctx, K, bdata)
+    return applyBCS(ctx, K, bdata)
 end
