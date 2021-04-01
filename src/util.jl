@@ -137,7 +137,7 @@ function tensor_invariants(T::SymmetricTensor{2,2})
     dT = det(T)
     return λ₁, λ₂, ξ₁, ξ₂, tT, dT
 end
-function tensor_invariants(T::AxisArray{<:SymmetricTensor{2,2,<:Real,3},2})
+function tensor_invariants(T::AbstractMatrix{<:SymmetricTensor{2,2,<:Real,3}})
     E = map(t -> eigen(t), T)
     λ₁ = map(e -> eigvals(e)[1], E)
     λ₂ = map(e -> eigvals(e)[2], E)
@@ -203,7 +203,7 @@ and reorders them to be in node order.
 """
 function dof2node(ctx::AbstractGridContext{dim}, u::Vector) where {dim}
    # n = ctx.n
-   # res = fill(0.0, JuAFEM.getnnodes(ctx.grid))
+   # res = fill(0.0, Ferrite.getnnodes(ctx.grid))
    # for node in 1:n
    #         res[node] = u[ctx.node_to_dof[node]]
    #    end

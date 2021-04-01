@@ -131,35 +131,35 @@ end
 # WA is a matrix containing all the derivatives at the dofs, possibly multiplied by a representation
 # matrix in the nonadaptive case
 function assembleLinearResponseMatrix(ctx, WA; bdata::BoundaryData=BoundaryData())
-    cv = JFM.CellScalarValues(ctx.qr, ctx.ip, ctx.ip_geom)
+    cv = FEM.CellScalarValues(ctx.qr, ctx.ip, ctx.ip_geom)
     dh = ctx.dh
-    K = JFM.create_sparsity_pattern(dh)
-    a_K = JFM.start_assemble(K)
-    dofs = zeros(Int, JFM.ndofs_per_cell(dh))
-    n = JFM.getnbasefunctions(cv)         # number of basis functions
+    K = FEM.create_sparsity_pattern(dh)
+    a_K = FEM.start_assemble(K)
+    dofs = zeros(Int, FEM.ndofs_per_cell(dh))
+    n = FEM.getnbasefunctions(cv)         # number of basis functions
     Ke = zeros(n, n)
 
     index = 1 # quadrature point counter
 
-    @inbounds for cell in JFM.CellIterator(dh)
+    @inbounds for cell in FEM.CellIterator(dh)
         fill!(Ke, 0)
-        JFM.reinit!(cv, cell)
-        for q in 1:JFM.getnquadpoints(cv)
-            dΩ = JFM.getdetJdV(cv, q) * ctx.mass_weights[index]
+        FEM.reinit!(cv, cell)
+        for q in 1:FEM.getnquadpoints(cv)
+            dΩ = FEM.getdetJdV(cv, q) * ctx.mass_weights[index]
             for i in 1:n
-                ∇φᵢ = JFM.shape_gradient(cv, q, i)
+                ∇φᵢ = FEM.shape_gradient(cv, q, i)
                 for j in 1:n
-                    ∇φⱼ = JFM.shape_gradient(cv, q, j)
+                    ∇φⱼ = FEM.shape_gradient(cv, q, j)
                     for k in 1:n
-                        ∇φₖ = JFM.shape_gradient(cv, q, k)
-                        Ke[i,j] += (∇φᵢ ⋅ WA[:,JFM.celldofs(cell)[k]])  * (∇φₖ ⋅ ∇φⱼ) * dΩ
+                        ∇φₖ = FEM.shape_gradient(cv, q, k)
+                        Ke[i,j] += (∇φᵢ ⋅ WA[:,FEM.celldofs(cell)[k]])  * (∇φₖ ⋅ ∇φⱼ) * dΩ
                     end
                 end
             end
             index += 1
         end
-        JFM.celldofs!(dofs, cell)
-        JFM.assemble!(a_K, dofs, Ke)
+        FEM.celldofs!(dofs, cell)
+        FEM.assemble!(a_K, dofs, Ke)
     end
     return applyBCS(ctx, K, bdata)
 end
