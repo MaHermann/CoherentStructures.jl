@@ -168,6 +168,7 @@ export
 	linearized_flow_autodiff,
 	adaptiveTOCollocationLinearResponseMatrix,
 	nonadaptiveTOCollocationLinearResponseMatrix,
+	getLinearResponse,
 
     #dynamicIsoperimetry.jl
 	dynamic_cheeger_value,

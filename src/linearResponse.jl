@@ -163,3 +163,16 @@ function assembleLinearResponseMatrix(ctx, WA; bdata::BoundaryData=BoundaryData(
     end
     return applyBCS(ctx, K, bdata)
 end
+
+function getLinearResponse(u₀,λ₀,M,K,L)
+	lhs = [K-λ₀*M   -M*u₀
+			u₀'*M      0]
+	rhs = [-L*u₀    ;  0]
+
+	sol = lhs \ rhs
+
+	u_dot = sol[1:end-1]
+	λ_dot = sol[end]
+
+	return u_dot, λ_dot
+end
