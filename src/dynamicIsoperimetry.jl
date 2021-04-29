@@ -137,15 +137,24 @@ function get_levelset(ctx, u, c;
 end
 
 function get_minimal_levelset(ctx, u, objective_function;
-        x_resolution=nothing, y_resolution=nothing, n_candidates=100, bdata=BoundaryData())
+        x_resolution=nothing, y_resolution=nothing, min=minimum(u), max=maximum(u),
+        n_candidates=100, bdata=BoundaryData())
 
     xs, ys, fs = get_function_values(ctx,u,x_resolution=x_resolution,y_resolution=y_resolution,bdata=bdata)
 
     currentmin = Inf
     result = nothing
 
-    for cl in levels(contours(xs, ys, fs, n_candidates))
-        value = objective_function(cl)
+    for cl in levels(contours(xs, ys, fs, range(min,stop=max,length=n_candidates)))
+        curves = lines(cl)
+        if length(curves) == 0  # this can happen e.g. for the levelset of max(u)
+            continue
+        end
+        # TODO
+        if length(curves) != 1
+            @warn "Currently only connected levelsets are allowed! Levelset: ", level(cl)
+        end
+        value = objective_function(curves[1])
         if value < currentmin
             currentmin = value
             result = cl
@@ -168,7 +177,8 @@ function dynamic_cheeger_value(ctx, curve, flowmap; tolerance=0.0)
     return 0.5 * combined_length / min(volume_curve, (volume_Ω - volume_curve))
 end
 
-# simple final differences for visualization only
+
+# simple finite differences for visualization only
 # shouldn't be too hard to use the grid instead and do something like evaluate_function_from_node_or_cellvals
 function gradient_from_values(xs,ys,fs)
     dx = diff(fs,dims=1)./diff(xs)

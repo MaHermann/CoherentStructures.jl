@@ -7,7 +7,7 @@
 Implements the SEBA algorithm (see https://web.maths.unsw.edu.au/~froyland/FRS18a.pdf).
 
 """
-function SEBA(Vin; μ=0.99/sqrt(size(Vin, 1)), tol=1e-14, maxiter=5000)
+function SEBA(Vin; μ=0.99/sqrt(size(Vin, 1)), tol=1e-14, maxiter=5000, returnR=false,sort=true)
     n, nev = size(Vin)
     V = Matrix(qr(Vin).Q)
     S = zeros(n, nev)
@@ -45,5 +45,14 @@ function SEBA(Vin; μ=0.99/sqrt(size(Vin, 1)), tol=1e-14, maxiter=5000)
         S[:,i] ./= maximum(S[:,i])
     end
 
-    return S[:, sortperm([-minimum(S[:,i]) for i in 1:nev])]
+    if sort
+         S = S[:, sortperm([-minimum(S[:,i]) for i in 1:nev])]
+    end
+
+    if returnR
+         return S,R
+    else
+         return S
+    end
+
 end
