@@ -151,9 +151,9 @@ function get_minimal_levelset(ctx, u, objective_function;
             continue
         end
         # TODO
-        if length(curves) != 1
-            @warn "Currently only connected levelsets are allowed! Levelset: ", level(cl)
-        end
+        #if length(curves) != 1
+        #    @warn "Currently only connected levelsets are allowed! Levelset: ", level(cl)
+        #end
         value = objective_function(curves[1])
         if value < currentmin
             currentmin = value

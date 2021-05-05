@@ -32,6 +32,17 @@ function interpolateVF(X::AbstractRange{S1},
     return ITP.scale(ITP.interpolate(UV, itp_type), X, Y, T)
 end
 
+function interpolateVF_linearBC(X::AbstractRange{S1},
+                       Y::AbstractRange{S1},
+                       T::AbstractRange{S1},
+                       U::AbstractArray{S2,3},
+                       V::AbstractArray{S2,3},
+                       itp_type=ITP.BSpline(ITP.Cubic(ITP.Line(ITP.OnGrid())))
+                       ) where {S1 <: Real, S2 <: Real}
+    UV = map(SVector{2,S2}, U, V)::Array{SVector{2,S2},3}
+    return ITP.scale(ITP.interpolate(UV, itp_type), X, Y, T)
+end
+
 """
     interp_rhs(u, p, t) -> SVector{2}
 
